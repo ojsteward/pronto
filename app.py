@@ -1,6 +1,8 @@
 import streamlit as st
 import streamlit.components.v1 as components
 import time
+import pandas as pd
+import io
 
 # 1. SETUP & BRANDING
 st.set_page_config(page_title="Pronto | Practice Revenue Autopsy", page_icon="📈", layout="centered")
@@ -8,7 +10,7 @@ st.set_page_config(page_title="Pronto | Practice Revenue Autopsy", page_icon="�
 st.markdown("""
     <style>
     .stApp { background-color: #001e36; color: #ffffff; }
-    .stNumberInput label { color: #ffffff !important; font-weight: 600; }
+    .stNumberInput label, .stTextInput label { color: #ffffff !important; font-weight: 600; }
     div.stButton > button:first-child {
         background: linear-gradient(90deg, #ff8c00 0%, #ff4500 100%);
         color: white; border: none; padding: 18px 30px; border-radius: 8px;
@@ -30,6 +32,9 @@ st.title("Practice Revenue Autopsy™")
 
 # 2. INPUT SECTION
 with st.container():
+    # Practice Name Input Added
+    practice_name = st.text_input("Practice Name", placeholder="Enter the name of your practice...")
+    
     col1, col2 = st.columns(2)
     inputs = {}
     with col1:
@@ -112,7 +117,7 @@ with st.container():
             st.markdown(f"""
             <div class="report-card">
                 <h1 style="color: #ffffff; margin-top:0; font-size: 2.2rem;">The Verdict</h1>
-                <p style="font-size: 1.3rem; margin-bottom: 20px;">Pronto discovered that your low hanging fruit is in <b>"{winner_key}"</b></p>
+                <p style="font-size: 1.3rem; margin-bottom: 20px;">Pronto discovered that <b>{practice_name if practice_name else 'your practice'}'s</b> low hanging fruit is in <b>"{winner_key}"</b></p>
                 <p style="font-size: 1.2rem; color: #00d2ff; font-weight: bold; margin-bottom: 25px;">
                     Based on 1.2 million in production, your practice is leaving <span style="color: #ff4500;">${winner_loss:,.0f}</span> on the table annually.
                 </p>
@@ -127,6 +132,35 @@ with st.container():
             for label, data in FINAL_RESULTS.items():
                 st.markdown(f'<div class="status-box status-{data["status"]}">{label}</div>', unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
+
+            # DOWNLOAD DATA SECTION
+            # Prepare data for CSV
+            export_data = {"Metric": [], "Value/Result": []}
+            export_data["Metric"].append("Practice Name")
+            export_data["Value/Result"].append(practice_name if practice_name else "N/A")
+            
+            for key, val in inputs.items():
+                export_data["Metric"].append(f"Input: {key}")
+                export_data["Value/Result"].append(val if val is not None else "Skipped")
+            
+            export_data["Metric"].append("Primary Revenue Leak")
+            export_data["Value/Result"].append(winner_key)
+            export_data["Metric"].append("Annual Loss Amount")
+            export_data["Value/Result"].append(f"${winner_loss:,.2f}")
+
+            for label, data in FINAL_RESULTS.items():
+                export_data["Metric"].append(f"Silo: {label} Status")
+                export_data["Value/Result"].append(data['status'].upper())
+            
+            df = pd.DataFrame(export_data)
+            csv = df.to_csv(index=False).encode('utf-8')
+            
+            st.download_button(
+                label="📥 Download Autopsy Data (CSV)",
+                data=csv,
+                file_name=f"Pronto_Autopsy_{practice_name.replace(' ', '_') if practice_name else 'Results'}.csv",
+                mime='text/csv',
+            )
 
             # 3) NEW CTA FOR FULL AUTOPSY
             st.markdown(f"""
