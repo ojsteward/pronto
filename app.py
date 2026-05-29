@@ -27,23 +27,24 @@ st.markdown("""
     .status-green { border-color: #28a745; background: rgba(40, 167, 69, 0.1); color: #28a745; }
     .status-red { border-color: #dc3545; background: rgba(220, 53, 69, 0.1); color: #dc3545; }
     .disclaimer-box { background: rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 8px; border-left: 4px solid #ff8c00; margin-top: 20px; font-style: italic; font-size: 0.9rem; }
-    #MainMenu, footer, header {visibility: hidden;}
     
-    /* Strips system colors from internal notification caches and forces white text */
-    div[data-testid="stNotification"], 
-    div[data-testid="stNotification"] *,
-    div[data-testid="stNotification"] p,
-    div[data-testid="stNotification"] div { 
+    /* Custom White Text Warning Box Style */
+    .custom-warning-box {
+        background-color: rgba(255, 140, 0, 0.1) !important;
+        border: 1px solid rgba(255, 140, 0, 0.4) !important;
+        border-left: 5px solid #ff8c00 !important;
+        padding: 15px 20px !important;
+        border-radius: 6px !important;
+        margin-bottom: 25px !important;
+    }
+    .custom-warning-box p {
         color: #ffffff !important;
-        background-color: transparent !important;
+        margin: 0 !important;
+        font-size: 0.95rem !important;
+        line-height: 1.5 !important;
     }
     
-    /* Re-establishes a clean subtle background for the warning alert box itself */
-    div[data-testid="stNotification"] {
-        background-color: rgba(255, 255, 255, 0.05) !important;
-        border: 1px solid rgba(255, 140, 0, 0.3) !important;
-        border-radius: 8px !important;
-    }
+    #MainMenu, footer, header {visibility: hidden;}
     </style>
     """, unsafe_allow_html=True)
 
@@ -77,8 +78,13 @@ with st.container():
             time.sleep(3)
             status.update(label="Autopsy Complete!", state="complete", expanded=False)
 
+        # Replaced native st.warning with custom HTML warning container to force white text
         if any(v is None for v in inputs.values()):
-            st.warning("Looks like some fields were skipped. That’s exactly how blind spots happen. Pronto eliminates the guesswork by giving you complete, real-time access to every metric that drives your practice...daily...automatically.")
+            st.markdown("""
+                <div class="custom-warning-box">
+                    <p>⚠️ Looks like some fields were skipped. That’s exactly how blind spots happen. Pronto eliminates the guesswork by giving you complete, real-time access to every metric that drives your practice...daily...automatically.</p>
+                </div>
+            """, unsafe_allow_html=True)
 
         # 3. THE SILO ENGINE
         FINAL_RESULTS = {}
@@ -132,64 +138,4 @@ with st.container():
                 "EBITDA": inputs['ebitda'],
                 "No Shows": inputs['noshow'],
                 "Insurance": inputs['ins'],
-                "Hiring": inputs['hire'],
-                "Hygiene Prod": inputs['hprod'],
-                "Hygiene Perio": inputs['hperio'],
-                "NP Month": inputs['np'],
-                "NP Conv": inputs['conv']
-            }])
-
-            try:
-                existing_df = conn.read(ttl=0)
-                existing_df = existing_df.dropna(how='all')
-                updated_df = pd.concat([existing_df, new_data], ignore_index=True)
-                conn.update(data=updated_df)
-            except Exception as e:
-                st.error(f"Spreadsheet log failed: {e}")
-
-            # --- THE VERDICT UI ---
-            st.markdown(f"""
-            <div class="report-card">
-                <h1 style="color: #ffffff; margin-top:0; font-size: 2.2rem;">The Verdict</h1>
-                <p style="font-size: 1.3rem; margin-bottom: 20px;">Pronto discovered that <b>{practice_name if practice_name else 'your practice'}'s</b> low hanging fruit is in <b>"{winner_key}"</b></p>
-                <p style="font-size: 1.2rem; color: #00d2ff; font-weight: bold; margin-bottom: 25px;">
-                    Based on 1.2 million in production, your practice is leaving <span style="color: #ff4500;">${winner_loss:,.0f}</span> on the table annually.
-                </p>
-                <p style="font-size: 1rem; line-height: 1.6; color: #cccccc;">
-                    To get a more detailed analysis and autopsy of your personal results, please fill out the following 
-                    and we will elaborate on the "{winner_key}" results as well as the others and let you know what can be done about it.
-                </p>
-            </div>
-            """, unsafe_allow_html=True)
-
-            st.markdown('<div class="status-container">', unsafe_allow_html=True)
-            for label, data in FINAL_RESULTS.items():
-                st.markdown(f'<div class="status-box status-{data["status"]}">{label}</div>', unsafe_allow_html=True)
-            st.markdown('</div>', unsafe_allow_html=True)
-
-            st.markdown(f"""
-            <div style="text-align: center; margin-top: 40px; margin-bottom: 20px;">
-                <h2 style="color: #ff8c00;">“You just got a glimpse.</h2>
-                <p style="font-size: 1.2rem; font-weight: bold;">Now let’s find what you’re actually missing.</p>
-                <p style="font-size: 1.1rem; line-height: 1.5;">
-                    Fill out the form below to unlock your full Practice Autopsy—breaking down exactly where revenue is leaking across all 6 categories.<br><br>
-                    <b>Because if this much showed up from a few inputs…</b><br>
-                    what do you think happens when you’re tracking 140+ metrics in real time?
-                </p>
-            </div>
-            """, unsafe_allow_html=True)
-
-            st.markdown("""
-            <div class="disclaimer-box">
-                These results aren’t meant to be perfect—they’re meant to be revealing. 
-                We’ve taken your inputs and applied industry benchmarks to surface likely gaps. 
-                But without real-time data integration, there are variables we simply can’t see. 
-                Pronto doesn’t guess. It knows. This is the preview… not the movie.
-            </div>
-            """, unsafe_allow_html=True)
-
-            # 5. GHL FORM
-            components.html("""
-                <iframe src="https://api.leadconnectorhq.com/widget/form/iVFg0wteKeXMSEXviPvh" style="width:100%;height:600px;border:none;border-radius:8px"></iframe>
-                <script src="https://link.msgsndr.com/js/form_embed.js"></script>
-            """, height=650)
+                "Hiring": inputs
