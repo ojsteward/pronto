@@ -146,7 +146,7 @@ with st.container():
             }])
 
             try:
-                existing_df = conn.read(spreadsheet="https://docs.google.com/spreadsheets/d/your-actual-sheet-url-here", ttl=0)
+                existing_df = conn.read(spreadsheet="https://docs.google.com/spreadsheets/d/1Md6YCNDA3arJy2jVRunjOySjxNK9_FHtcGRtqoVe5J4/edit?gid=0#gid=0", ttl=0)
                 existing_df = existing_df.dropna(how='all')
                 updated_df = pd.concat([existing_df, new_data], ignore_index=True)
                 conn.update(data=updated_df)
