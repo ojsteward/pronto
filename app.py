@@ -49,10 +49,16 @@ st.markdown("""
         text-transform: uppercase; letter-spacing: 1px;
     }
     .report-card { background: rgba(255, 255, 255, 0.05); padding: 35px; border-radius: 15px; border: 2px solid #00d2ff; text-align: center; margin-bottom: 30px; }
-    .status-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
-    .status-box { padding: 15px; border-radius: 8px; font-weight: bold; text-align: center; font-size: 0.8rem; border: 2px solid transparent; text-transform: uppercase; }
-    .status-green { border-color: #28a745; background: rgba(40, 167, 69, 0.1); color: #28a745; }
-    .status-red { border-color: #dc3545; background: rgba(220, 53, 69, 0.1); color: #dc3545; }
+    
+    /* Grid Box Styling Update for Inline Support */
+    .status-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 35px; }
+    .status-box { padding: 20px; border-radius: 8px; text-align: center; border: 2px solid transparent; }
+    .status-title { font-weight: bold; font-size: 1rem; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px; }
+    .status-desc { font-size: 0.85rem; font-weight: normal; line-height: 1.4; opacity: 0.95; }
+    
+    .status-green { border-color: #28a745; background: rgba(40, 167, 69, 0.15); color: #4ade80; }
+    .status-red { border-color: #dc3545; background: rgba(220, 53, 69, 0.15); color: #fca5a5; }
+    
     .disclaimer-box { background: rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 8px; border-left: 4px solid #ff8c00; margin-top: 20px; font-style: italic; font-size: 0.9rem; }
     
     .custom-warning-box {
@@ -65,14 +71,14 @@ st.markdown("""
     }
     .custom-warning-box p { color: #ffffff !important; margin: 0 !important; font-size: 0.95rem !important; line-height: 1.5 !important; }
     
-    /* Dedicated Custom Styled Separation Line */
     .ghl-divider { border: 0; height: 2px; background: linear-gradient(90deg, transparent, #00d2ff, transparent); margin: 50px 0; }
     
     #MainMenu, footer, header {visibility: hidden;}
     </style>
     """, unsafe_allow_html=True)
 
-st.image("https://assets.cdn.filesafe.space/2TCpScjx7MU1ZqFgoQKY/media/6a450ebc8b4444aad4e1c10d.png", width=220)
+# Updated Logo Link
+st.image("https://assets.cdn.filesafe.space/2TCpScjx7MU1ZqFgoQKY/media/6a45138ddc5f2c22a2815e0c.png", width=220)
 st.title("Practice Revenue Autopsy™")
 
 # 2. INPUT SECTION
@@ -83,26 +89,31 @@ with st.container():
     inputs = {}
     with col1:
         inputs['ebitda'] = st.number_input("Current EBITDA %", min_value=0, max_value=100, value=None, step=1)
-        inputs['noshow'] = st.number_input("No Show %", min_value=0, max_value=100, value=None, step=1) # Reverted back here
+        inputs['noshow'] = st.number_input("No Show %", min_value=0, max_value=100, value=None, step=1)
         inputs['ins'] = st.number_input("Days to Collect from Ins", min_value=0, value=None, step=1)
         inputs['hire'] = st.number_input("Avg Weeks to Hire a Hygienist", min_value=0, value=None, step=1)
     with col2:
-        inputs['hprod'] = st.number_input("Hygiene Production %", min_value=0, max_value=100, value=None, step=1) # Reverted back here
+        inputs['hprod'] = st.number_input("Hygiene Production %", min_value=0, max_value=100, value=None, step=1)
         inputs['hperio'] = st.number_input("Hygiene Perio %", min_value=0, max_value=100, value=None, step=1)
         inputs['np'] = st.number_input("# New Patients per Month", min_value=0, value=None, step=1)
         inputs['conv'] = st.number_input("% of Calls Converted to NP", min_value=0, max_value=100, value=None, step=1)
 
     if st.button("Generate Autopsy Results"):
         
-        # Animated Stepped Loading Sequence
+        # Animated Loading Sequence
         with st.status("Initializing Systems...", expanded=True) as status:
             with st.spinner("Reviewing clinical benchmarks..."):
-                time.sleep(2)
+                time.sleep(1.5)
             with st.spinner("Isolating financial leaks..."):
-                time.sleep(2)
-            with st.spinner("Crunching analytics and logging practice data..."):
-                time.sleep(2)
-            status.update(label="Autopsy Complete!", state="complete", expanded=False)
+                time.sleep(1.5)
+            with st.spinner("Crunching final diagnostics..."):
+                time.sleep(1.5)
+            status.update(label="Autopsy Complete! Rendering Layout Visuals...", state="running", expanded=True)
+            
+            # Additional loading animation step while interface components are constructed below
+            with st.spinner("Compiling report analytics database elements..."):
+                time.sleep(2.0)
+            status.update(label="Complete!", state="complete", expanded=False)
 
         if any(v is None for v in inputs.values()):
             st.markdown("""
@@ -194,18 +205,24 @@ with st.container():
             </div>
             """, unsafe_allow_html=True)
 
-            # Grid Container
+            # Combined Grid Container with Dynamic Inside Text Comments
             st.markdown('<div class="status-container">', unsafe_allow_html=True)
             for label, data in FINAL_RESULTS.items():
-                st.markdown(f'<div class="status-box status-{data["status"]}">{label}</div>', unsafe_allow_html=True)
-            st.markdown('</div>', unsafe_allow_html=True)
-
-            # Custom Results Context Messages
-            for label, data in FINAL_RESULTS.items():
                 if data["status"] == "green":
-                    st.markdown(f"🟢 **{label}:** Congratulations, your numbers are Great")
+                    st.markdown(f"""
+                    <div class="status-box status-green">
+                        <div class="status-title">🟢 {label}</div>
+                        <div class="status-desc">Congratulations, your numbers are Great</div>
+                    </div>
+                    """, unsafe_allow_html=True)
                 else:
-                    st.markdown(f"🔴 **{label}:** Urgent attention needed. This is a tremendous opportunity to fix this")
+                    st.markdown(f"""
+                    <div class="status-box status-red">
+                        <div class="status-title">🔴 {label}</div>
+                        <div class="status-desc">Urgent attention needed. This is a tremendous opportunity to fix this</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
 
             st.markdown(f"""
             <div style="text-align: center; margin-top: 40px; margin-bottom: 20px;">
@@ -228,7 +245,7 @@ with st.container():
             </div>
             """, unsafe_allow_html=True)
 
-            # Styled clean division element between messages and the GHL component
+            # Divider line element
             st.markdown('<hr class="ghl-divider">', unsafe_allow_html=True)
 
             # 5. GHL FORM
