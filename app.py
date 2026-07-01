@@ -1,3 +1,6 @@
+Here is your updated code with the new logo URL swapped in.
+
+```python
 import streamlit as st
 import os
 import json
@@ -82,7 +85,8 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-st.image("https://assets.cdn.filesafe.space/m3q2qalMCnhAfklCMau5/media/69cfe385d0e88a4b7fa4e9e8.jpg", width=220)
+# Swapped with your new logo URL here:
+st.image("https://assets.cdn.filesafe.space/2TCpScjx7MU1ZqFgoQKY/media/6a450ebc8b4444aad4e1c10d.png", width=220)
 st.title("Practice Revenue Autopsy™")
 
 # 2. INPUT SECTION
@@ -93,11 +97,11 @@ with st.container():
     inputs = {}
     with col1:
         inputs['ebitda'] = st.number_input("Current EBITDA %", min_value=0, max_value=100, value=None, step=1)
-        inputs['hprod'] = st.number_input("Hygiene Production %", min_value=0, max_value=100, value=None, step=1) # Moved here
+        inputs['hprod'] = st.number_input("Hygiene Production %", min_value=0, max_value=100, value=None, step=1)
         inputs['ins'] = st.number_input("Days to Collect from Ins", min_value=0, value=None, step=1)
         inputs['hire'] = st.number_input("Avg Weeks to Hire a Hygienist", min_value=0, value=None, step=1)
     with col2:
-        inputs['noshow'] = st.number_input("No Show %", min_value=0, max_value=100, value=None, step=1) # Moved here
+        inputs['noshow'] = st.number_input("No Show %", min_value=0, max_value=100, value=None, step=1)
         inputs['hperio'] = st.number_input("Hygiene Perio %", min_value=0, max_value=100, value=None, step=1)
         inputs['np'] = st.number_input("# New Patients per Month", min_value=0, value=None, step=1)
         inputs['conv'] = st.number_input("% of Calls Converted to NP", min_value=0, max_value=100, value=None, step=1)
@@ -235,3 +239,5 @@ with st.container():
                 <iframe src="https://api.leadconnectorhq.com/widget/form/iVFg0wteKeXMSEXviPvh" style="width:100%;height:600px;border:none;border-radius:8px"></iframe>
                 <script src="https://link.msgsndr.com/js/form_embed.js"></script>
             """, height=650)
+
+```
