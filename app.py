@@ -1,6 +1,3 @@
-Here is your updated code with the new logo URL swapped in.
-
-```python
 import streamlit as st
 import os
 import json
@@ -239,5 +236,3 @@ with st.container():
                 <iframe src="https://api.leadconnectorhq.com/widget/form/iVFg0wteKeXMSEXviPvh" style="width:100%;height:600px;border:none;border-radius:8px"></iframe>
                 <script src="https://link.msgsndr.com/js/form_embed.js"></script>
             """, height=650)
-
-```
