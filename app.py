@@ -83,7 +83,7 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # Swapped with your new logo URL here:
-st.image("https://assets.cdn.filesafe.space/2TCpScjx7MU1ZqFgoQKY/media/6a450ebc8b4444aad4e1c10d.png", width=220)
+st.image("https://assets.cdn.filesafe.space/2TCpScjx7MU1ZqFgoQKY/media/6a45138ddc5f2c22a2815e0c.png", width=220)
 st.title("Practice Revenue Autopsy™")
 
 # 2. INPUT SECTION
