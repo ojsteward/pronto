@@ -53,14 +53,17 @@ st.markdown("""
     .stApp { background-color: #001e36; color: #ffffff; }
     .stNumberInput label, .stTextInput label { color: #ffffff !important; font-weight: 600; }
     
-    /* Clean Visual Divider Line (No text) */
-    .visual-section-divider {
-        border: 0;
-        height: 3px;
-        background: linear-gradient(90deg, #ff8c00 0%, #00d2ff 100%);
-        margin: 40px 0;
-        opacity: 0.8;
-        border-radius: 2px;
+    /* Clean White Text Legend Layout Dividers */
+    .app-section-legend {
+        color: #ffffff;
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin-top: 45px;
+        margin-bottom: 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        padding-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
     }
     
     div.stButton > button:first-child {
@@ -92,7 +95,7 @@ st.markdown("""
     }
     .custom-warning-box p { color: #ffffff !important; margin: 0 !important; font-size: 0.95rem !important; line-height: 1.5 !important; }
     
-    .ghl-divider { border: 0; height: 2px; background: linear-gradient(90deg, transparent, #00d2ff, transparent); margin: 50px 0; }
+    .ghl-divider { border: 0; height: 2px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent); margin: 40px 0; }
     
     #MainMenu, footer, header {visibility: hidden;}
     </style>
@@ -211,8 +214,8 @@ with st.container():
             except Exception as e:
                 st.error(f"Spreadsheet log failed: {e}")
 
-            # --- SECTION DIVIDER 1 (PURE VISUAL LINE) ---
-            st.markdown('<div class="visual-section-divider"></div>', unsafe_allow_html=True)
+            # --- LEGEND: THE VERDICT ---
+            st.markdown('<div class="app-section-legend">Primary Diagnostic</div>', unsafe_allow_html=True)
 
             # --- THE VERDICT UI ---
             st.markdown(f"""
@@ -228,6 +231,9 @@ with st.container():
                 </p>
             </div>
             """, unsafe_allow_html=True)
+
+            # --- LEGEND: CATEGORY MATRIX ---
+            st.markdown('<div class="app-section-legend">Category Benchmarks</div>', unsafe_allow_html=True)
 
             # Combined Grid Container with Dynamic Inside Text Comments
             st.markdown('<div class="status-container">', unsafe_allow_html=True)
@@ -248,8 +254,11 @@ with st.container():
                     """, unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
 
+            # --- LEGEND: PERFORMANCE INSIGHTS ---
+            st.markdown('<div class="app-section-legend">Performance Insights</div>', unsafe_allow_html=True)
+
             st.markdown(f"""
-            <div style="text-align: center; margin-top: 40px; margin-bottom: 20px;">
+            <div style="text-align: center; margin-top: 20px; margin-bottom: 20px;">
                 <h2 style="color: #ff8c00;">“You just got a glimpse.</h2>
                 <p style="font-size: 1.2rem; font-weight: bold;">Now let’s find what you’re actually missing.</p>
                 <p style="font-size: 1.1rem; line-height: 1.5;">
@@ -259,6 +268,9 @@ with st.container():
                 </p>
             </div>
             """, unsafe_allow_html=True)
+
+            # --- LEGEND: STRUCTURAL LIMITATIONS ---
+            st.markdown('<div class="app-section-legend">Data Statement</div>', unsafe_allow_html=True)
 
             st.markdown("""
             <div class="disclaimer-box">
@@ -272,8 +284,8 @@ with st.container():
             # Divider line element
             st.markdown('<hr class="ghl-divider">', unsafe_allow_html=True)
 
-            # --- SECTION DIVIDER 2 (PURE VISUAL LINE) ---
-            st.markdown('<div class="visual-section-divider"></div>', unsafe_allow_html=True)
+            # --- LEGEND: APPLICATION FORM ---
+            st.markdown('<div class="app-section-legend">Deep-Dive Access</div>', unsafe_allow_html=True)
 
             # 5. GHL FORM
             components.html("""
