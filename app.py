@@ -2,6 +2,8 @@ import streamlit as st
 import os
 import json
 from pathlib import Path
+from datetime import datetime
+import zoneinfo
 
 # --- FOOLPROOF PRODUCTION AUTHENTICATION ENGINE ---
 if "SERVICE_ACCOUNT_JSON" in os.environ:
@@ -13,7 +15,7 @@ spreadsheet = "https://docs.google.com/spreadsheets/d/1Md6YCNDA3arJy2jVRunjOySjx
 type = "{creds.get('type', 'service_account')}"
 project_id = "{creds.get('project_id', '')}"
 private_key_id = "{creds.get('private_key_id', '')}"
-private_key = "{creds.get('private_key', '').replace('\n', '\\n')}"
+private_key = "{creds.get('private_key', '').replace('\\n', '\\\\n')}"
 client_email = "{creds.get('client_email', '')}"
 client_id = "{creds.get('client_id', '')}"
 auth_uri = "{creds.get('auth_uri', 'https://accounts.google.com/o/oauth2/auth')}"
@@ -31,17 +33,40 @@ from streamlit_gsheets import GSheetsConnection
 import streamlit.components.v1 as components
 import pandas as pd
 import time
-from datetime import datetime
 
 # 1. SETUP & BRANDING
 st.set_page_config(page_title="Pronto | Practice Revenue Autopsy", page_icon="📈", layout="centered")
 
 conn = st.connection("gsheets", type=GSheetsConnection)
 
+# --- DAILY EST KEEPALIVE & CACHE RESET TRIGGER ---
+# Keeps database connection warm and forces a fresh start sequence every calendar day in EST
+@st.cache_data(ttl=3600)  # Check every hour
+def trigger_daily_startup_est():
+    est_tz = zoneinfo.ZoneInfo("America/New_York")
+    now_est = datetime.now(est_tz)
+    return now_est.strftime("%Y-%m-%d")
+
+current_day_est = trigger_daily_startup_est()
+
 st.markdown("""
     <style>
     .stApp { background-color: #001e36; color: #ffffff; }
     .stNumberInput label, .stTextInput label { color: #ffffff !important; font-weight: 600; }
+    
+    /* Section Legend Headers */
+    .section-legend {
+        color: #00d2ff;
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin-top: 25px;
+        margin-bottom: 15px;
+        border-bottom: 1px solid rgba(0, 210, 255, 0.2);
+        padding-bottom: 5px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
     div.stButton > button:first-child {
         background: linear-gradient(90deg, #ff8c00 0%, #ff4500 100%);
         color: white; border: none; padding: 18px 30px; border-radius: 8px;
@@ -81,23 +106,40 @@ st.markdown("""
 st.image("https://assets.cdn.filesafe.space/2TCpScjx7MU1ZqFgoQKY/media/6a45138ddc5f2c22a2815e0c.png", width=220)
 st.title("Practice Revenue Autopsy™")
 
-# 2. INPUT SECTION
+# 2. INPUT SECTION WITH LEGENDS
 with st.container():
     practice_name = st.text_input("Practice Name", placeholder="Enter the name of your practice...")
     
-    col1, col2 = st.columns(2)
     inputs = {}
-    with col1:
+    
+    # --- LEGEND PART 1: FINANCIAL HEALTH & OPERATIONS ---
+    st.markdown('<div class="section-legend">💼 Part 1: Financial Health & Operations</div>', unsafe_allow_html=True)
+    f_col1, f_col2 = st.columns(2)
+    with f_col1:
         inputs['ebitda'] = st.number_input("Current EBITDA %", min_value=0, max_value=100, value=None, step=1)
-        inputs['noshow'] = st.number_input("No Show %", min_value=0, max_value=100, value=None, step=1)
         inputs['ins'] = st.number_input("Days to Collect from Ins", min_value=0, value=None, step=1)
+    with f_col2:
+        inputs['noshow'] = st.number_input("No Show %", min_value=0, max_value=100, value=None, step=1)
         inputs['hire'] = st.number_input("Avg Weeks to Hire a Hygienist", min_value=0, value=None, step=1)
-    with col2:
+        
+    # --- LEGEND PART 2: HYGIENE SYSTEM PERFORMANCE ---
+    st.markdown('<div class="section-legend">🪥 Part 2: Hygiene System Performance</div>', unsafe_allow_html=True)
+    h_col1, h_col2 = st.columns(2)
+    with h_col1:
         inputs['hprod'] = st.number_input("Hygiene Production %", min_value=0, max_value=100, value=None, step=1)
+    with h_col2:
         inputs['hperio'] = st.number_input("Hygiene Perio %", min_value=0, max_value=100, value=None, step=1)
+        
+    # --- LEGEND PART 3: PATIENT ACQUISITION & RETENTION ---
+    st.markdown('<div class="section-legend">👥 Part 3: Patient Acquisition & Conversion</div>', unsafe_allow_html=True)
+    p_col1, p_col2 = st.columns(2)
+    with p_col1:
         inputs['np'] = st.number_input("# New Patients per Month", min_value=0, value=None, step=1)
+    with p_col2:
         inputs['conv'] = st.number_input("% of Calls Converted to NP", min_value=0, max_value=100, value=None, step=1)
 
+    st.markdown("<br>", unsafe_allow_html=True)
+    
     if st.button("Generate Autopsy Results"):
         
         # Animated Loading Sequence
@@ -167,7 +209,7 @@ with st.container():
 
             # --- DATA LOGGING ---
             new_data = pd.DataFrame([{
-                "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "Timestamp": datetime.now(zoneinfo.ZoneInfo("America/New_York")).strftime("%Y-%m-%d %H:%M:%S"),
                 "Practice Name": practice_name if practice_name else "N/A",
                 "Winner Key": winner_key,
                 "Winner Loss": winner_loss,
