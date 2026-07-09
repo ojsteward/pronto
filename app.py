@@ -15,7 +15,7 @@ spreadsheet = "https://docs.google.com/spreadsheets/d/1Md6YCNDA3arJy2jVRunjOySjx
 type = "{creds.get('type', 'service_account')}"
 project_id = "{creds.get('project_id', '')}"
 private_key_id = "{creds.get('private_key_id', '')}"
-private_key = "{creds.get('private_key', '').replace('\\n', '\\\\n')}"
+private_key = "{creds.get('private_key', '').replace('\n', '\\n')}"
 client_email = "{creds.get('client_email', '')}"
 client_id = "{creds.get('client_id', '')}"
 auth_uri = "{creds.get('auth_uri', 'https://accounts.google.com/o/oauth2/auth')}"
@@ -39,9 +39,7 @@ st.set_page_config(page_title="Pronto | Practice Revenue Autopsy", page_icon="�
 
 conn = st.connection("gsheets", type=GSheetsConnection)
 
-# --- DAILY EST REFRESH SEQUENCE (OPTIMIZED FOR RENDER CONTAINER ENVIRONMENTS) ---
-# Ensures that whether Render leaves the service running or wakes it up via HTTP ping, 
-# it guarantees a completely baseline start timestamp tied explicitly to Eastern Time.
+# --- DAILY EST REFRESH SEQUENCE ---
 @st.cache_data(ttl=3600)  
 def trigger_daily_startup_est():
     est_tz = zoneinfo.ZoneInfo("America/New_York")
@@ -55,17 +53,14 @@ st.markdown("""
     .stApp { background-color: #001e36; color: #ffffff; }
     .stNumberInput label, .stTextInput label { color: #ffffff !important; font-weight: 600; }
     
-    /* Flow Section Legend Headers */
-    .app-section-legend {
-        color: #00d2ff;
-        font-size: 1.4rem;
-        font-weight: 700;
-        margin-top: 40px;
-        margin-bottom: 20px;
-        border-bottom: 2px solid #ff8c00;
-        padding-bottom: 8px;
-        text-transform: uppercase;
-        letter-spacing: 1px;
+    /* Clean Visual Divider Line (No text) */
+    .visual-section-divider {
+        border: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #ff8c00 0%, #00d2ff 100%);
+        margin: 40px 0;
+        opacity: 0.8;
+        border-radius: 2px;
     }
     
     div.stButton > button:first-child {
@@ -107,10 +102,7 @@ st.markdown("""
 st.image("https://assets.cdn.filesafe.space/2TCpScjx7MU1ZqFgoQKY/media/6a45138ddc5f2c22a2815e0c.png", width=220)
 st.title("Practice Revenue Autopsy™")
 
-# --- APP FLOW DIVISION 1 ---
-st.markdown('<div class="app-section-legend">📋 Section 1: Practice Metrics Intake</div>', unsafe_allow_html=True)
-
-# 2. INPUT SECTION (Original 2-column input block fully intact)
+# 2. INPUT SECTION (Original layout untouched)
 with st.container():
     practice_name = st.text_input("Practice Name", placeholder="Enter the name of your practice...")
     
@@ -194,9 +186,9 @@ with st.container():
                 winner_key = "Practice Efficiency"
                 winner_loss = 0
 
-            # --- DATA LOGGING ---
+            # --- DATA LOGGING (EXACT ORIGINAL FORMAT MATCH) ---
             new_data = pd.DataFrame([{
-                "Timestamp": datetime.now(zoneinfo.ZoneInfo("America/New_York")).strftime("%Y-%m-%d %H:%M:%S"),
+                "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 "Practice Name": practice_name if practice_name else "N/A",
                 "Winner Key": winner_key,
                 "Winner Loss": winner_loss,
@@ -219,8 +211,8 @@ with st.container():
             except Exception as e:
                 st.error(f"Spreadsheet log failed: {e}")
 
-            # --- APP FLOW DIVISION 2 ---
-            st.markdown('<div class="app-section-legend">🔍 Section 2: Financial Autopsy Diagnostic</div>', unsafe_allow_html=True)
+            # --- SECTION DIVIDER 1 (PURE VISUAL LINE) ---
+            st.markdown('<div class="visual-section-divider"></div>', unsafe_allow_html=True)
 
             # --- THE VERDICT UI ---
             st.markdown(f"""
@@ -280,8 +272,8 @@ with st.container():
             # Divider line element
             st.markdown('<hr class="ghl-divider">', unsafe_allow_html=True)
 
-            # --- APP FLOW DIVISION 3 ---
-            st.markdown('<div class="app-section-legend">🚀 Section 3: Deep-Dive Application Form</div>', unsafe_allow_html=True)
+            # --- SECTION DIVIDER 2 (PURE VISUAL LINE) ---
+            st.markdown('<div class="visual-section-divider"></div>', unsafe_allow_html=True)
 
             # 5. GHL FORM
             components.html("""
