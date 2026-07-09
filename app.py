@@ -39,9 +39,10 @@ st.set_page_config(page_title="Pronto | Practice Revenue Autopsy", page_icon="�
 
 conn = st.connection("gsheets", type=GSheetsConnection)
 
-# --- DAILY EST KEEPALIVE & CACHE RESET TRIGGER ---
-# Keeps database connection warm and forces a fresh start sequence every calendar day in EST
-@st.cache_data(ttl=3600)  # Check every hour
+# --- DAILY EST REFRESH SEQUENCE (OPTIMIZED FOR RENDER CONTAINER ENVIRONMENTS) ---
+# Ensures that whether Render leaves the service running or wakes it up via HTTP ping, 
+# it guarantees a completely baseline start timestamp tied explicitly to Eastern Time.
+@st.cache_data(ttl=3600)  
 def trigger_daily_startup_est():
     est_tz = zoneinfo.ZoneInfo("America/New_York")
     now_est = datetime.now(est_tz)
@@ -54,17 +55,17 @@ st.markdown("""
     .stApp { background-color: #001e36; color: #ffffff; }
     .stNumberInput label, .stTextInput label { color: #ffffff !important; font-weight: 600; }
     
-    /* Section Legend Headers */
-    .section-legend {
+    /* Flow Section Legend Headers */
+    .app-section-legend {
         color: #00d2ff;
-        font-size: 1.25rem;
+        font-size: 1.4rem;
         font-weight: 700;
-        margin-top: 25px;
-        margin-bottom: 15px;
-        border-bottom: 1px solid rgba(0, 210, 255, 0.2);
-        padding-bottom: 5px;
+        margin-top: 40px;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #ff8c00;
+        padding-bottom: 8px;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
+        letter-spacing: 1px;
     }
     
     div.stButton > button:first-child {
@@ -106,40 +107,26 @@ st.markdown("""
 st.image("https://assets.cdn.filesafe.space/2TCpScjx7MU1ZqFgoQKY/media/6a45138ddc5f2c22a2815e0c.png", width=220)
 st.title("Practice Revenue Autopsy™")
 
-# 2. INPUT SECTION WITH LEGENDS
+# --- APP FLOW DIVISION 1 ---
+st.markdown('<div class="app-section-legend">📋 Section 1: Practice Metrics Intake</div>', unsafe_allow_html=True)
+
+# 2. INPUT SECTION (Original 2-column input block fully intact)
 with st.container():
     practice_name = st.text_input("Practice Name", placeholder="Enter the name of your practice...")
     
+    col1, col2 = st.columns(2)
     inputs = {}
-    
-    # --- LEGEND PART 1: FINANCIAL HEALTH & OPERATIONS ---
-    st.markdown('<div class="section-legend">💼 Part 1: Financial Health & Operations</div>', unsafe_allow_html=True)
-    f_col1, f_col2 = st.columns(2)
-    with f_col1:
+    with col1:
         inputs['ebitda'] = st.number_input("Current EBITDA %", min_value=0, max_value=100, value=None, step=1)
-        inputs['ins'] = st.number_input("Days to Collect from Ins", min_value=0, value=None, step=1)
-    with f_col2:
         inputs['noshow'] = st.number_input("No Show %", min_value=0, max_value=100, value=None, step=1)
+        inputs['ins'] = st.number_input("Days to Collect from Ins", min_value=0, value=None, step=1)
         inputs['hire'] = st.number_input("Avg Weeks to Hire a Hygienist", min_value=0, value=None, step=1)
-        
-    # --- LEGEND PART 2: HYGIENE SYSTEM PERFORMANCE ---
-    st.markdown('<div class="section-legend">🪥 Part 2: Hygiene System Performance</div>', unsafe_allow_html=True)
-    h_col1, h_col2 = st.columns(2)
-    with h_col1:
+    with col2:
         inputs['hprod'] = st.number_input("Hygiene Production %", min_value=0, max_value=100, value=None, step=1)
-    with h_col2:
         inputs['hperio'] = st.number_input("Hygiene Perio %", min_value=0, max_value=100, value=None, step=1)
-        
-    # --- LEGEND PART 3: PATIENT ACQUISITION & RETENTION ---
-    st.markdown('<div class="section-legend">👥 Part 3: Patient Acquisition & Conversion</div>', unsafe_allow_html=True)
-    p_col1, p_col2 = st.columns(2)
-    with p_col1:
         inputs['np'] = st.number_input("# New Patients per Month", min_value=0, value=None, step=1)
-    with p_col2:
         inputs['conv'] = st.number_input("% of Calls Converted to NP", min_value=0, max_value=100, value=None, step=1)
 
-    st.markdown("<br>", unsafe_allow_html=True)
-    
     if st.button("Generate Autopsy Results"):
         
         # Animated Loading Sequence
@@ -232,6 +219,9 @@ with st.container():
             except Exception as e:
                 st.error(f"Spreadsheet log failed: {e}")
 
+            # --- APP FLOW DIVISION 2 ---
+            st.markdown('<div class="app-section-legend">🔍 Section 2: Financial Autopsy Diagnostic</div>', unsafe_allow_html=True)
+
             # --- THE VERDICT UI ---
             st.markdown(f"""
             <div class="report-card">
@@ -289,6 +279,9 @@ with st.container():
 
             # Divider line element
             st.markdown('<hr class="ghl-divider">', unsafe_allow_html=True)
+
+            # --- APP FLOW DIVISION 3 ---
+            st.markdown('<div class="app-section-legend">🚀 Section 3: Deep-Dive Application Form</div>', unsafe_allow_html=True)
 
             # 5. GHL FORM
             components.html("""
