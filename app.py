@@ -83,6 +83,10 @@ st.markdown("""
     .status-green { border-color: #28a745; background: rgba(40, 167, 69, 0.15); color: #4ade80; }
     .status-red { border-color: #dc3545; background: rgba(220, 53, 69, 0.15); color: #fca5a5; }
     
+    /* Color Meaning Legend Above Matrix */
+    .color-legend { display: flex; justify-content: center; gap: 30px; margin-bottom: 15px; font-size: 0.95rem; }
+    .legend-item { display: flex; align-items: center; gap: 8px; }
+    
     .disclaimer-box { background: rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 8px; border-left: 4px solid #ff8c00; margin-top: 20px; font-style: italic; font-size: 0.9rem; }
     
     .custom-warning-box {
@@ -234,6 +238,14 @@ with st.container():
 
             # --- LEGEND: CATEGORY MATRIX ---
             st.markdown('<div class="app-section-legend">Category Benchmarks</div>', unsafe_allow_html=True)
+
+            # --- COLOR EXPLANATION LEGEND ---
+            st.markdown("""
+            <div class="color-legend">
+                <div class="legend-item"><span style="color: #4ade80; font-weight: bold;">🟢 Green:</span> Meeting or exceeding healthy industry benchmarks.</div>
+                <div class="legend-item"><span style="color: #fca5a5; font-weight: bold;">🔴 Red:</span> Below benchmark; hidden operational revenue leaks present.</div>
+            </div>
+            """, unsafe_allow_html=True)
 
             # Combined Grid Container with Dynamic Inside Text Comments
             st.markdown('<div class="status-container">', unsafe_allow_html=True)
