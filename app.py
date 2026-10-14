@@ -35,7 +35,7 @@ import pandas as pd
 import time
 
 # 1. SETUP & BRANDING
-st.set_page_config(page_title="Pronto | Practice Revenue Autopsy", page_icon="📈", layout="centered")
+st.set_page_config(page_title="Pronto | Profit Diagnostic Report", page_icon="📈", layout="centered")
 
 conn = st.connection("gsheets", type=GSheetsConnection)
 
@@ -107,7 +107,7 @@ st.markdown("""
 
 # Updated Logo Link
 st.image("https://assets.cdn.filesafe.space/2TCpScjx7MU1ZqFgoQKY/media/6a45138ddc5f2c22a2815e0c.png", width=220)
-st.title("Practice Revenue Autopsy™")
+st.title("Profit Diagnostic Report")
 
 # 2. INPUT SECTION (Original layout untouched)
 with st.container():
@@ -126,7 +126,7 @@ with st.container():
         inputs['np'] = st.number_input("# New Patients per Month", min_value=0, value=None, step=1)
         inputs['conv'] = st.number_input("% of Calls Converted to NP", min_value=0, max_value=100, value=None, step=1)
 
-    if st.button("Generate Autopsy Results"):
+    if st.button("Generate Diagnostic Results"):
         
         # Animated Loading Sequence
         with st.status("Initializing Systems...", expanded=True) as status:
@@ -136,7 +136,7 @@ with st.container():
                 time.sleep(1.5)
             with st.spinner("Crunching final diagnostics..."):
                 time.sleep(1.5)
-            status.update(label="Autopsy Complete! Rendering Layout Visuals...", state="running", expanded=True)
+            status.update(label="Diagnostic Complete! Rendering Layout Visuals...", state="running", expanded=True)
             
             # Additional loading animation step while interface components are constructed below
             with st.spinner("Compiling report analytics database elements..."):
@@ -230,8 +230,10 @@ with st.container():
                     Based on 1.2 million in production, your practice is leaving <span style="color: #ff4500;">${winner_loss:,.0f}</span> on the table annually.
                 </p>
                 <p style="font-size: 1rem; line-height: 1.6; color: #cccccc;">
-                    To get a more detailed analysis and autopsy of your personal results, please fill out the following 
-                    and we will elaborate on the "{winner_key}" results as well as the others and let you know what can be done about it.
+                    To get a more detailed diagnostic, please set up a discovery call and we will elaborate on the numbers and let you know what can be done about it.
+                </p>
+                <p style="font-size: 1.1rem; margin-top: 15px;">
+                    <a href="https://b.prontodental.com/widget/booking/sisg5S7Kz2VOsXHU4aAr" target="_blank" style="color: #00d2ff; font-weight: bold;">Click Here</a>
                 </p>
             </div>
             """, unsafe_allow_html=True)
@@ -274,7 +276,7 @@ with st.container():
                 <h2 style="color: #ff8c00;">“You just got a glimpse.</h2>
                 <p style="font-size: 1.2rem; font-weight: bold;">Now let’s find what you’re actually missing.</p>
                 <p style="font-size: 1.1rem; line-height: 1.5;">
-                    Fill out the form below to unlock your full Practice Autopsy—breaking down exactly where revenue is leaking across all 6 categories.<br><br>
+                    Fill out the form below to unlock your full Practice Diagnostic—breaking down exactly where revenue is leaking across all 6 categories.<br><br>
                     <b>Because if this much showed up from a few inputs…</b><br>
                     what do you think happens when you’re tracking 140+ metrics in real time?
                 </p>
