@@ -271,12 +271,9 @@ with st.container():
                         </p>
                     """
                 else:
-                    closing = f"""
+                    closing = """
                         <p style="font-size: 1rem; line-height: 1.6; color: #cccccc;">
                             To get a more detailed diagnostic, please set up a discovery call and we will elaborate on the numbers and let you know what can be done about it.
-                        </p>
-                        <p style="font-size: 1.1rem; margin-top: 15px;">
-                            <a href="{BOOKING_URL}" target="_blank" style="color: #00d2ff; font-weight: bold;">Click Here</a>
                         </p>
                     """
                 st.markdown(f"""
@@ -289,8 +286,8 @@ with st.container():
                     {closing}
                 </div>
                 """, unsafe_allow_html=True)
-                if v1:
-                    book_button("Book Your Appointment")
+                # Booking button right under the results in both versions
+                book_button("Book Your Appointment" if v1 else "Book a Discovery Call")
 
             def render_benchmarks():
                 st.markdown('<div class="app-section-legend">Category Benchmarks</div>', unsafe_allow_html=True)
@@ -358,7 +355,7 @@ with st.container():
                 st.markdown('<hr class="ghl-divider">', unsafe_allow_html=True)
 
                 # --- LEGEND: APPLICATION FORM ---
-                st.markdown('<div class="app-section-legend">Deep-Dive Access</div>', unsafe_allow_html=True)
+                st.markdown('<div class="app-section-legend">Want more information? Enter here</div>', unsafe_allow_html=True)
 
                 # 5. GHL FORM
                 components.html("""
