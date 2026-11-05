@@ -181,30 +181,34 @@ with st.container():
             """, unsafe_allow_html=True)
 
         # 3. THE SILO ENGINE
+        # green = at or better than benchmark, yellow = close to benchmark (not too good), red = well below benchmark
+        def band(is_green, is_yellow):
+            return "green" if is_green else ("yellow" if is_yellow else "red")
+
         FINAL_RESULTS = {}
         REV_BASE = 1200000
 
         if inputs['ebitda'] is not None:
             loss = ((22 - inputs['ebitda']) / 100 * REV_BASE) if inputs['ebitda'] < 22 else 0
-            FINAL_RESULTS['EBITDA'] = {'loss': loss, 'status': "red" if inputs['ebitda'] < 22 else "green"}
+            FINAL_RESULTS['EBITDA'] = {'loss': loss, 'status': band(inputs['ebitda'] >= 22, inputs['ebitda'] >= 18)}
 
         if inputs['noshow'] is not None:
             loss = ((inputs['noshow'] - 5) / 100 * REV_BASE) if inputs['noshow'] > 5 else 0
-            FINAL_RESULTS['No Shows'] = {'loss': loss, 'status': "red" if inputs['noshow'] > 5 else "green"}
+            FINAL_RESULTS['No Shows'] = {'loss': loss, 'status': band(inputs['noshow'] <= 5, inputs['noshow'] <= 8)}
 
         if inputs['ins'] is not None:
             loss = ((inputs['ins'] - 25) / 365 * 0.07 * REV_BASE) if inputs['ins'] > 25 else 0
-            FINAL_RESULTS['Insurance'] = {'loss': loss, 'status': "red" if inputs['ins'] > 25 else "green"}
+            FINAL_RESULTS['Insurance'] = {'loss': loss, 'status': band(inputs['ins'] <= 25, inputs['ins'] <= 35)}
 
         if inputs['hire'] is not None:
             raw = ((inputs['hire'] - 4) * 5120) - 10000 if inputs['hire'] > 4 else 0
-            FINAL_RESULTS['Hiring'] = {'loss': max(0, raw), 'status': "red" if inputs['hire'] > 4 else "green"}
+            FINAL_RESULTS['Hiring'] = {'loss': max(0, raw), 'status': band(inputs['hire'] <= 4, inputs['hire'] <= 6)}
 
         if inputs['np'] is not None or inputs['conv'] is not None:
             curr_np = inputs['np'] if inputs['np'] is not None else 30
             curr_conv = inputs['conv'] if inputs['conv'] is not None else 80
             loss = ((80 - curr_conv) / 100 * curr_np * 1000 * 12) if curr_conv < 80 else 0
-            FINAL_RESULTS['Patient Conversion'] = {'loss': loss, 'status': "red" if curr_conv < 80 else "green"}
+            FINAL_RESULTS['Patient Conversion'] = {'loss': loss, 'status': band(curr_conv >= 80, curr_conv >= 70)}
 
         if inputs['hprod'] is not None or inputs['hperio'] is not None:
             curr_hprod = inputs['hprod'] if inputs['hprod'] is not None else 30
@@ -212,10 +216,10 @@ with st.container():
             curr_perio = inputs['hperio'] if inputs['hperio'] is not None else 40
             h_base = (curr_hprod / 100 * REV_BASE) if curr_hprod >= 30 else (0.30 * REV_BASE)
             perio_loss = ((40 - curr_perio) / 100 * h_base) if curr_perio < 40 else 0
-            FINAL_RESULTS['Hygiene System'] = {'loss': hp_loss + perio_loss, 'status': "red" if (curr_hprod < 30 or curr_perio < 40) else "green"}
+            FINAL_RESULTS['Hygiene System'] = {'loss': hp_loss + perio_loss, 'status': band(curr_hprod >= 30 and curr_perio >= 40, curr_hprod >= 25 and curr_perio >= 35)}
 
         if FINAL_RESULTS:
-            failing = {k: v for k, v in FINAL_RESULTS.items() if v['status'] == "red"}
+            failing = {k: v for k, v in FINAL_RESULTS.items() if v['status'] != "green"}
             if failing:
                 winner_key = max(failing, key=lambda k: failing[k]['loss'])
                 winner_loss = failing[winner_key]['loss']
@@ -248,7 +252,7 @@ with st.container():
             except Exception as e:
                 st.error(f"Spreadsheet log failed: {e}")
 
-            # --- CATEGORY STATUS (green / red, plus yellow for categories with missing inputs) ---
+            # --- CATEGORY STATUS (green / yellow / red) ---
             CATEGORY_INPUTS = {
                 'EBITDA': ['ebitda'],
                 'No Shows': ['noshow'],
@@ -288,56 +292,40 @@ with st.container():
                 if v1:
                     book_button("Book Your Appointment")
 
-            def render_benchmarks(with_yellow=False):
+            def render_benchmarks():
                 st.markdown('<div class="app-section-legend">Category Benchmarks</div>', unsafe_allow_html=True)
-                yellow_legend = ""
-                if with_yellow:
-                    yellow_legend = '<div class="legend-item"><span style="color: #fde047; font-weight: bold;">🟡 Yellow:</span> Not enough data entered to measure this category; this is a blind spot.</div>'
-                st.markdown(f"""
+                st.markdown("""
                 <div class="color-legend" style="flex-wrap: wrap;">
                     <div class="legend-item"><span style="color: #4ade80; font-weight: bold;">🟢 Green:</span> Meeting or exceeding healthy industry benchmarks.</div>
+                    <div class="legend-item"><span style="color: #fde047; font-weight: bold;">🟡 Yellow:</span> Close to benchmark, but not where it should be; money is slipping through.</div>
                     <div class="legend-item"><span style="color: #fca5a5; font-weight: bold;">🔴 Red:</span> Below benchmark; hidden operational revenue leaks present.</div>
-                    {yellow_legend}
                 </div>
                 """, unsafe_allow_html=True)
 
+                boxes = {
+                    "green": ("status-green", "🟢", "Congratulations, your numbers are Great"),
+                    "yellow": ("status-yellow", "🟡", "Not bad, but not great either. There is still money to recover here"),
+                    "red": ("status-red", "🔴", "Urgent attention needed. This is a tremendous opportunity to fix this"),
+                }
                 st.markdown('<div class="status-container">', unsafe_allow_html=True)
-                for label, fields in CATEGORY_INPUTS.items():
-                    missing = any(inputs[f] is None for f in fields)
-                    data = FINAL_RESULTS.get(label)
-                    if with_yellow and missing:
-                        st.markdown(f"""
-                        <div class="status-box status-yellow">
-                            <div class="status-title">🟡 {label}</div>
-                            <div class="status-desc">Some data is missing here, so we can't fully measure it. This is exactly where blind spots hide.</div>
-                        </div>
-                        """, unsafe_allow_html=True)
-                    elif data is None:
-                        continue
-                    elif data["status"] == "green":
-                        st.markdown(f"""
-                        <div class="status-box status-green">
-                            <div class="status-title">🟢 {label}</div>
-                            <div class="status-desc">Congratulations, your numbers are Great</div>
-                        </div>
-                        """, unsafe_allow_html=True)
-                    else:
-                        st.markdown(f"""
-                        <div class="status-box status-red">
-                            <div class="status-title">🔴 {label}</div>
-                            <div class="status-desc">Urgent attention needed. This is a tremendous opportunity to fix this</div>
-                        </div>
-                        """, unsafe_allow_html=True)
+                for label, data in FINAL_RESULTS.items():
+                    css, icon, desc = boxes[data["status"]]
+                    st.markdown(f"""
+                    <div class="status-box {css}">
+                        <div class="status-title">{icon} {label}</div>
+                        <div class="status-desc">{desc}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
                 st.markdown('</div>', unsafe_allow_html=True)
 
             if REPORT_VERSION == "1":
                 # VERSION 1: benchmarks first, then the verdict, booking is the only call to action
-                render_benchmarks(with_yellow=True)
+                render_benchmarks()
                 render_verdict(v1=True)
             else:
                 # VERSION 2: original full report (Book a Meeting button is shown at the top of the page)
                 render_verdict(v1=False)
-                render_benchmarks(with_yellow=False)
+                render_benchmarks()
 
                 # --- LEGEND: PERFORMANCE INSIGHTS ---
                 st.markdown('<div class="app-section-legend">Performance Insights</div>', unsafe_allow_html=True)
