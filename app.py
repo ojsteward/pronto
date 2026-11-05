@@ -82,6 +82,18 @@ st.markdown("""
     
     .status-green { border-color: #28a745; background: rgba(40, 167, 69, 0.15); color: #4ade80; }
     .status-red { border-color: #dc3545; background: rgba(220, 53, 69, 0.15); color: #fca5a5; }
+    .status-yellow { border-color: #eab308; background: rgba(234, 179, 8, 0.15); color: #fde047; }
+
+    /* Book a meeting call to action */
+    .book-cta-wrap { text-align: center; margin: 20px 0 30px 0; }
+    .book-cta {
+        display: inline-block;
+        background: linear-gradient(90deg, #ff8c00 0%, #ff4500 100%);
+        color: #ffffff !important; text-decoration: none !important;
+        padding: 16px 34px; border-radius: 8px;
+        font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
+    }
+    .book-cta:hover { opacity: 0.9; }
     
     /* Color Meaning Legend Above Matrix */
     .color-legend { display: flex; justify-content: center; gap: 30px; margin-bottom: 15px; font-size: 0.95rem; }
@@ -108,6 +120,24 @@ st.markdown("""
 # Updated Logo Link
 st.image("https://assets.cdn.filesafe.space/2TCpScjx7MU1ZqFgoQKY/media/6a45138ddc5f2c22a2815e0c.png", width=220)
 st.title("Profit Diagnostic Report")
+
+# --- REPORT VERSION ---
+# ?v=1 : short version (category benchmarks first, verdict second, booking is the only call to action)
+# ?v=2 : original full report with a "Book a Meeting" button at the top (default)
+BOOKING_URL = "https://b.prontodental.com/widget/booking/sisg5S7Kz2VOsXHU4aAr"
+REPORT_VERSION = str(st.query_params.get("v", "2")).strip()
+if REPORT_VERSION not in ("1", "2"):
+    REPORT_VERSION = "2"
+
+def book_button(label="Book a Meeting"):
+    st.markdown(f"""
+        <div class="book-cta-wrap">
+            <a class="book-cta" href="{BOOKING_URL}" target="_blank">{label}</a>
+        </div>
+    """, unsafe_allow_html=True)
+
+if REPORT_VERSION == "2":
+    book_button("Book a Meeting")
 
 # 2. INPUT SECTION (Original layout untouched)
 with st.container():
@@ -218,91 +248,132 @@ with st.container():
             except Exception as e:
                 st.error(f"Spreadsheet log failed: {e}")
 
-            # --- LEGEND: THE VERDICT ---
-            st.markdown('<div class="app-section-legend">Primary Diagnostic</div>', unsafe_allow_html=True)
+            # --- CATEGORY STATUS (green / red, plus yellow for categories with missing inputs) ---
+            CATEGORY_INPUTS = {
+                'EBITDA': ['ebitda'],
+                'No Shows': ['noshow'],
+                'Insurance': ['ins'],
+                'Hiring': ['hire'],
+                'Patient Conversion': ['np', 'conv'],
+                'Hygiene System': ['hprod', 'hperio'],
+            }
 
-            # --- THE VERDICT UI ---
-            st.markdown(f"""
-            <div class="report-card">
-                <h1 style="color: #ffffff; margin-top:0; font-size: 2.2rem;">The Verdict</h1>
-                <p style="font-size: 1.3rem; margin-bottom: 20px;">Pronto discovered that <b>{practice_name if practice_name else 'your practice'}'s</b> low hanging fruit is in <b>"{winner_key}"</b></p>
-                <p style="font-size: 1.2rem; color: #00d2ff; font-weight: bold; margin-bottom: 25px;">
-                    Based on 1.2 million in production, your practice is leaving <span style="color: #ff4500;">${winner_loss:,.0f}</span> on the table annually.
-                </p>
-                <p style="font-size: 1rem; line-height: 1.6; color: #cccccc;">
-                    To get a more detailed diagnostic, please set up a discovery call and we will elaborate on the numbers and let you know what can be done about it.
-                </p>
-                <p style="font-size: 1.1rem; margin-top: 15px;">
-                    <a href="https://b.prontodental.com/widget/booking/sisg5S7Kz2VOsXHU4aAr" target="_blank" style="color: #00d2ff; font-weight: bold;">Click Here</a>
-                </p>
-            </div>
-            """, unsafe_allow_html=True)
-
-            # --- LEGEND: CATEGORY MATRIX ---
-            st.markdown('<div class="app-section-legend">Category Benchmarks</div>', unsafe_allow_html=True)
-
-            # --- COLOR EXPLANATION LEGEND ---
-            st.markdown("""
-            <div class="color-legend">
-                <div class="legend-item"><span style="color: #4ade80; font-weight: bold;">🟢 Green:</span> Meeting or exceeding healthy industry benchmarks.</div>
-                <div class="legend-item"><span style="color: #fca5a5; font-weight: bold;">🔴 Red:</span> Below benchmark; hidden operational revenue leaks present.</div>
-            </div>
-            """, unsafe_allow_html=True)
-
-            # Combined Grid Container with Dynamic Inside Text Comments
-            st.markdown('<div class="status-container">', unsafe_allow_html=True)
-            for label, data in FINAL_RESULTS.items():
-                if data["status"] == "green":
-                    st.markdown(f"""
-                    <div class="status-box status-green">
-                        <div class="status-title">🟢 {label}</div>
-                        <div class="status-desc">Congratulations, your numbers are Great</div>
-                    </div>
-                    """, unsafe_allow_html=True)
+            def render_verdict(v1=False):
+                st.markdown('<div class="app-section-legend">Primary Diagnostic</div>', unsafe_allow_html=True)
+                if v1:
+                    closing = """
+                        <p style="font-size: 1rem; line-height: 1.6; color: #cccccc;">
+                            Book a call with our team and we will walk you through these numbers and what can be done about them.
+                        </p>
+                    """
                 else:
-                    st.markdown(f"""
-                    <div class="status-box status-red">
-                        <div class="status-title">🔴 {label}</div>
-                        <div class="status-desc">Urgent attention needed. This is a tremendous opportunity to fix this</div>
-                    </div>
-                    """, unsafe_allow_html=True)
-            st.markdown('</div>', unsafe_allow_html=True)
+                    closing = f"""
+                        <p style="font-size: 1rem; line-height: 1.6; color: #cccccc;">
+                            To get a more detailed diagnostic, please set up a discovery call and we will elaborate on the numbers and let you know what can be done about it.
+                        </p>
+                        <p style="font-size: 1.1rem; margin-top: 15px;">
+                            <a href="{BOOKING_URL}" target="_blank" style="color: #00d2ff; font-weight: bold;">Click Here</a>
+                        </p>
+                    """
+                st.markdown(f"""
+                <div class="report-card">
+                    <h1 style="color: #ffffff; margin-top:0; font-size: 2.2rem;">The Verdict</h1>
+                    <p style="font-size: 1.3rem; margin-bottom: 20px;">Pronto discovered that <b>{practice_name if practice_name else 'your practice'}'s</b> low hanging fruit is in <b>"{winner_key}"</b></p>
+                    <p style="font-size: 1.2rem; color: #00d2ff; font-weight: bold; margin-bottom: 25px;">
+                        Based on 1.2 million in production, your practice is leaving <span style="color: #ff4500;">${winner_loss:,.0f}</span> on the table annually.
+                    </p>
+                    {closing}
+                </div>
+                """, unsafe_allow_html=True)
+                if v1:
+                    book_button("Book Your Appointment")
 
-            # --- LEGEND: PERFORMANCE INSIGHTS ---
-            st.markdown('<div class="app-section-legend">Performance Insights</div>', unsafe_allow_html=True)
+            def render_benchmarks(with_yellow=False):
+                st.markdown('<div class="app-section-legend">Category Benchmarks</div>', unsafe_allow_html=True)
+                yellow_legend = ""
+                if with_yellow:
+                    yellow_legend = '<div class="legend-item"><span style="color: #fde047; font-weight: bold;">🟡 Yellow:</span> Not enough data entered to measure this category; this is a blind spot.</div>'
+                st.markdown(f"""
+                <div class="color-legend" style="flex-wrap: wrap;">
+                    <div class="legend-item"><span style="color: #4ade80; font-weight: bold;">🟢 Green:</span> Meeting or exceeding healthy industry benchmarks.</div>
+                    <div class="legend-item"><span style="color: #fca5a5; font-weight: bold;">🔴 Red:</span> Below benchmark; hidden operational revenue leaks present.</div>
+                    {yellow_legend}
+                </div>
+                """, unsafe_allow_html=True)
 
-            st.markdown(f"""
-            <div style="text-align: center; margin-top: 20px; margin-bottom: 20px;">
-                <h2 style="color: #ff8c00;">“You just got a glimpse.</h2>
-                <p style="font-size: 1.2rem; font-weight: bold;">Now let’s find what you’re actually missing.</p>
-                <p style="font-size: 1.1rem; line-height: 1.5;">
-                    Fill out the form below to unlock your full Practice Diagnostic—breaking down exactly where revenue is leaking across all 6 categories.<br><br>
-                    <b>Because if this much showed up from a few inputs…</b><br>
-                    what do you think happens when you’re tracking 140+ metrics in real time?
-                </p>
-            </div>
-            """, unsafe_allow_html=True)
+                st.markdown('<div class="status-container">', unsafe_allow_html=True)
+                for label, fields in CATEGORY_INPUTS.items():
+                    missing = any(inputs[f] is None for f in fields)
+                    data = FINAL_RESULTS.get(label)
+                    if with_yellow and missing:
+                        st.markdown(f"""
+                        <div class="status-box status-yellow">
+                            <div class="status-title">🟡 {label}</div>
+                            <div class="status-desc">Some data is missing here, so we can't fully measure it. This is exactly where blind spots hide.</div>
+                        </div>
+                        """, unsafe_allow_html=True)
+                    elif data is None:
+                        continue
+                    elif data["status"] == "green":
+                        st.markdown(f"""
+                        <div class="status-box status-green">
+                            <div class="status-title">🟢 {label}</div>
+                            <div class="status-desc">Congratulations, your numbers are Great</div>
+                        </div>
+                        """, unsafe_allow_html=True)
+                    else:
+                        st.markdown(f"""
+                        <div class="status-box status-red">
+                            <div class="status-title">🔴 {label}</div>
+                            <div class="status-desc">Urgent attention needed. This is a tremendous opportunity to fix this</div>
+                        </div>
+                        """, unsafe_allow_html=True)
+                st.markdown('</div>', unsafe_allow_html=True)
 
-            # --- LEGEND: STRUCTURAL LIMITATIONS ---
-            st.markdown('<div class="app-section-legend">Data Statement</div>', unsafe_allow_html=True)
+            if REPORT_VERSION == "1":
+                # VERSION 1: benchmarks first, then the verdict, booking is the only call to action
+                render_benchmarks(with_yellow=True)
+                render_verdict(v1=True)
+            else:
+                # VERSION 2: original full report (Book a Meeting button is shown at the top of the page)
+                render_verdict(v1=False)
+                render_benchmarks(with_yellow=False)
 
-            st.markdown("""
-            <div class="disclaimer-box">
-                These results aren’t meant to be perfect—they’re meant to be revealing. 
-                We’ve taken your inputs and applied industry benchmarks to surface likely gaps. 
-                But without real-time data integration, there are variables we simply can’t see. 
-                Pronto doesn’t guess. It knows. This is the preview… not the movie.
-            </div>
-            """, unsafe_allow_html=True)
+                # --- LEGEND: PERFORMANCE INSIGHTS ---
+                st.markdown('<div class="app-section-legend">Performance Insights</div>', unsafe_allow_html=True)
 
-            # Divider line element
-            st.markdown('<hr class="ghl-divider">', unsafe_allow_html=True)
+                st.markdown(f"""
+                <div style="text-align: center; margin-top: 20px; margin-bottom: 20px;">
+                    <h2 style="color: #ff8c00;">“You just got a glimpse.</h2>
+                    <p style="font-size: 1.2rem; font-weight: bold;">Now let’s find what you’re actually missing.</p>
+                    <p style="font-size: 1.1rem; line-height: 1.5;">
+                        Fill out the form below to unlock your full Practice Diagnostic—breaking down exactly where revenue is leaking across all 6 categories.<br><br>
+                        <b>Because if this much showed up from a few inputs…</b><br>
+                        what do you think happens when you’re tracking 140+ metrics in real time?
+                    </p>
+                </div>
+                """, unsafe_allow_html=True)
 
-            # --- LEGEND: APPLICATION FORM ---
-            st.markdown('<div class="app-section-legend">Deep-Dive Access</div>', unsafe_allow_html=True)
+                # --- LEGEND: STRUCTURAL LIMITATIONS ---
+                st.markdown('<div class="app-section-legend">Data Statement</div>', unsafe_allow_html=True)
 
-            # 5. GHL FORM
-            components.html("""
-                <iframe src="https://api.leadconnectorhq.com/widget/form/iVFg0wteKeXMSEXviPvh" style="width:100%;height:600px;border:none;border-radius:8px"></iframe>
-                <script src="https://link.msgsndr.com/js/form_embed.js"></script>
-            """, height=650)
+                st.markdown("""
+                <div class="disclaimer-box">
+                    These results aren’t meant to be perfect—they’re meant to be revealing. 
+                    We’ve taken your inputs and applied industry benchmarks to surface likely gaps. 
+                    But without real-time data integration, there are variables we simply can’t see. 
+                    Pronto doesn’t guess. It knows. This is the preview… not the movie.
+                </div>
+                """, unsafe_allow_html=True)
+
+                # Divider line element
+                st.markdown('<hr class="ghl-divider">', unsafe_allow_html=True)
+
+                # --- LEGEND: APPLICATION FORM ---
+                st.markdown('<div class="app-section-legend">Deep-Dive Access</div>', unsafe_allow_html=True)
+
+                # 5. GHL FORM
+                components.html("""
+                    <iframe src="https://api.leadconnectorhq.com/widget/form/iVFg0wteKeXMSEXviPvh" style="width:100%;height:600px;border:none;border-radius:8px"></iframe>
+                    <script src="https://link.msgsndr.com/js/form_embed.js"></script>
+                """, height=650)
