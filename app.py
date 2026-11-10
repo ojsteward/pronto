@@ -264,18 +264,13 @@ with st.container():
 
             def render_verdict(v1=False):
                 st.markdown('<div class="app-section-legend">Primary Diagnostic</div>', unsafe_allow_html=True)
+                # Keep the closing paragraph on one line: indented or blank lines inside
+                # st.markdown make Markdown show the HTML as a code block.
                 if v1:
-                    closing = """
-                        <p style="font-size: 1rem; line-height: 1.6; color: #cccccc;">
-                            Book a call with our team and we will walk you through these numbers and what can be done about them.
-                        </p>
-                    """
+                    closing_text = "Book a call with our team and we will walk you through these numbers and what can be done about them."
                 else:
-                    closing = """
-                        <p style="font-size: 1rem; line-height: 1.6; color: #cccccc;">
-                            To get a more detailed diagnostic, please set up a discovery call and we will elaborate on the numbers and let you know what can be done about it.
-                        </p>
-                    """
+                    closing_text = "To get a more detailed diagnostic, please set up a discovery call and we will elaborate on the numbers and let you know what can be done about it."
+                closing = f'<p style="font-size: 1rem; line-height: 1.6; color: #cccccc;">{closing_text}</p>'
                 st.markdown(f"""
                 <div class="report-card">
                     <h1 style="color: #ffffff; margin-top:0; font-size: 2.2rem;">The Verdict</h1>
